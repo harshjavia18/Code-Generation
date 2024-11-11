@@ -1,5 +1,6 @@
 import re
 import os
+import time
 from flask import Flask, render_template, request
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
@@ -36,7 +37,13 @@ def extract_questions_and_answers(content):
 
 # Main function to process user queries and return matching answers
 def process_query(user_query, questions, answers):
-    # Use fuzzy matching to find the best match
+    keywords = ['java', 'cpp', 'php', 'C++', 'javascript', 'ruby', 'flutter', 'kotlin', 'swift', 'dart', 'c#', 'c', 'html', 'css', 'sql', 'mysql', 'mongodb', 'firebase', 'postgresql', 'oracle', 'sqlite', 'microsoft', 'linux', 'windows', 'macos', 'android', 'ios', 'web', 'mobile', 'desktop', 'cloud', 'aws', 'azure', 'gcp', 'firebase', 'heroku', 'netlify', 'vercel', 'digitalocean', 'linode', 'vultr', 'hostinger', 'bluehost', 'godaddy', 'namecheap', 'cloudflare', 'github', 'gitlab', 'bitbucket', 'jira', 'trello', 'slack', 'discord', 'zoom', 'microsoftteams', 'skype', 'whatsapp', 'telegram', 'signal', 'instagram', 'facebook', 'twitter', 'linkedin', 'youtube', 'tiktok', 'snapchat', 'pinterest', 'reddit', 'quora', 'stackoverflow', 'medium', 'dev', 'hackernoon', 'freecodecamp', 'geeksforgeeks', 'w3schools', 'tutorialspoint', 'javatpoint', 'programiz', 'geektrust', 'leetcode', 'hackerrank', 'codechef', 'codeforces', 'topcoder', 'spoj', 'atcoder', 'kickstart', 'hackerearth', 'interviewbit']
+    
+    # Check if the user query contains any of the predefined keywords
+    if any(keyword in user_query.lower() for keyword in keywords):
+        return "Sorry, we aren't trained on this yet!"
+    
+    # Perform fuzzy matching to find the best answer
     best_match, score = process.extractOne(user_query, questions, scorer=fuzz.token_set_ratio)
 
     # Adjust threshold to allow more flexibility in matching
@@ -50,6 +57,7 @@ def process_query(user_query, questions, answers):
 def home():
     dataset_path = 'dataset.txt'
     content = load_content(dataset_path)
+    
     if content:
         questions, answers = extract_questions_and_answers(content)
     else:
@@ -58,6 +66,10 @@ def home():
     result = ""
     if request.method == 'POST':
         user_query = request.form['user_input'].strip()
+
+        # Add a 4-second delay before processing the query
+        time.sleep(4)
+
         result = process_query(user_query, questions, answers)
     
     return render_template('index.html', result=result)
